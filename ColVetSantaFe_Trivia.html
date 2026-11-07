@@ -126,6 +126,8 @@ input:focus{border-color:var(--teal)}
       <form id="playerForm" novalidate>
         <div class="field"><label for="fNombre">Nombre</label><input type="text" id="fNombre" autocomplete="given-name"></div>
         <div class="field" style="margin-top:14px"><label for="fApellido">Apellido</label><input type="text" id="fApellido" autocomplete="family-name"></div>
+        <div class="field" style="margin-top:14px"><label for="fDni">DNI</label><input type="text" id="fDni" inputmode="numeric" autocomplete="off"></div>
+        <div class="field" style="margin-top:14px"><label for="fLocalidad">Localidad donde brindás atención</label><input type="text" id="fLocalidad" autocomplete="off"></div>
         <div class="field" style="margin-top:14px"><label for="fTelefono">Teléfono</label><input type="tel" id="fTelefono" autocomplete="tel"></div>
       </form>
       <button class="cta" id="btnPlay" type="button" disabled>Jugar
@@ -190,7 +192,7 @@ input:focus{border-color:var(--teal)}
       label:'Renta por embarazo',
       text:'Si estás matriculada y tuviste familia, ¿tu programa te cubre algo?',
       opts:[
-        'Sí, pero recién después de varios meses de espera',
+        'Sí, cuando me entero que voy a ser mamá',
         'No, el beneficio por maternidad no está incluido',
         'Sí, un pago único al nacer tu bebé'
       ],
@@ -212,11 +214,11 @@ input:focus{border-color:var(--teal)}
     },
     {
       label:'Fallecimiento',
-      text:'Si te llegara a pasar algo grave y faltás, ¿tu familia recibe algo del programa?',
+      text:'Si fallecés por un accidente o enfermedad, ¿tu familia recibe algo del programa?',
       opts:[
         'Sí, luego de 5 años como veterinario',
         'Sí, una suma de dinero para acompañarlos en ese momento',
-        'No, el programa es solo para vos'
+        'No, el programa es solo para mí'
       ],
       correct:1,
       feedbackCorrect:'¡Correcto! Tu familia recibe una suma de dinero si fallecés, ya sea por accidente o por enfermedad, para acompañarlos en ese momento.',
@@ -237,7 +239,7 @@ input:focus{border-color:var(--teal)}
     currentView = name;
   }
 
-  let player = {nombre:'', apellido:'', telefono:''};
+  let player = {nombre:'', apellido:'', dni:'', localidad:'', telefono:''};
   let qi = 0;
   let answers = [];
   let score = 0;
@@ -254,16 +256,16 @@ input:focus{border-color:var(--teal)}
   document.getElementById('btnStart').addEventListener('click', ()=>{ show('form'); snapshot(); });
 
   // Datos del jugador
-  const fNombre=document.getElementById('fNombre'), fApellido=document.getElementById('fApellido'), fTelefono=document.getElementById('fTelefono');
+  const fNombre=document.getElementById('fNombre'), fApellido=document.getElementById('fApellido'), fDni=document.getElementById('fDni'), fLocalidad=document.getElementById('fLocalidad'), fTelefono=document.getElementById('fTelefono');
   const btnPlay=document.getElementById('btnPlay');
   function validate(){
-    btnPlay.disabled = !(fNombre.value.trim().length>1 && fApellido.value.trim().length>1 && fTelefono.value.trim().length>5);
+    btnPlay.disabled = !(fNombre.value.trim().length>1 && fApellido.value.trim().length>1 && fDni.value.trim().length>5 && fLocalidad.value.trim().length>1 && fTelefono.value.trim().length>5);
   }
-  [fNombre,fApellido,fTelefono].forEach(el=> el.addEventListener('input', validate));
+  [fNombre,fApellido,fDni,fLocalidad,fTelefono].forEach(el=> el.addEventListener('input', validate));
   document.getElementById('playerForm').addEventListener('submit', e=> e.preventDefault());
   btnPlay.addEventListener('click', ()=>{
     if(btnPlay.disabled) return;
-    player = {nombre:fNombre.value.trim(), apellido:fApellido.value.trim(), telefono:fTelefono.value.trim()};
+    player = {nombre:fNombre.value.trim(), apellido:fApellido.value.trim(), dni:fDni.value.trim(), localidad:fLocalidad.value.trim(), telefono:fTelefono.value.trim()};
     qi=0; answers=[]; score=0;
     renderQuestion();
     show('quiz');
@@ -367,6 +369,8 @@ input:focus{border-color:var(--teal)}
       await db.collection('respuestas').add({
         nombre: player.nombre,
         apellido: player.apellido,
+        dni: player.dni,
+        localidad: player.localidad,
         telefono: player.telefono,
         score: score,
         respuestas: answers,
@@ -377,7 +381,7 @@ input:focus{border-color:var(--teal)}
 
   // Reiniciar / jugar con otra persona
   function resetAll(){
-    fNombre.value=''; fApellido.value=''; fTelefono.value=''; validate();
+    fNombre.value=''; fApellido.value=''; fDni.value=''; fLocalidad.value=''; fTelefono.value=''; validate();
     qi=0; answers=[]; score=0;
     show('intro');
     snapshot();
